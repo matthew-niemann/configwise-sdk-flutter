@@ -9,12 +9,12 @@ import 'package:vector_math/vector_math_64.dart';
 class ArSceneView extends StatefulWidget {
 
   const ArSceneView({
-    Key key,
-    @required this.onViewCreated,
+    Key? key,
+    this.onViewCreated,
   }) : super(key: key);
 
   /// This function will be fired when ARKit view is created.
-  final void Function(ArController controller) onViewCreated;
+  final void Function(ArController controller)? onViewCreated;
 
   @override
   _ArSceneViewState createState() => _ArSceneViewState();
@@ -44,11 +44,7 @@ class _ArSceneViewState extends State<ArSceneView> {
   }
 
   Future<void> onPlatformViewCreated(int id) async {
-    if (widget.onViewCreated == null) {
-      return;
-    }
-
-    widget.onViewCreated(ArController._init(id));
+    widget.onViewCreated?.call(ArController._init(id));
   }
 
 }
@@ -58,10 +54,8 @@ class _ArSceneViewState extends State<ArSceneView> {
 /// An [ArController] instance can be obtained by setting the [ArSceneView.onViewCreated]
 /// callback for an [ArSceneView] widget.
 class ArController {
-  ArController._init(
-      int id,
-  ) {
-    _channel = MethodChannel('cwflutter_ar_$id');
+  ArController._init(int id)
+    : _channel = MethodChannel('cwflutter_ar_$id') {
     _channel.setMethodCallHandler(_platformCallHandler);
     _channel.invokeMethod<void>('init');
   }
@@ -70,33 +64,33 @@ class ArController {
 
   /// This is called when a session fails.
   /// On failure the session will be paused.
-  void Function(bool isCritical, String message) onError;
+  void Function(bool isCritical, String message)? onError;
 
-  void Function(bool restarted) onArSessionStarted;
+  void Function(bool restarted)? onArSessionStarted;
 
-  void Function() onArSessionPaused;
+  void Function()? onArSessionPaused;
 
-  void Function(String message) onArShowHelpMessage;
+  void Function(String message)? onArShowHelpMessage;
 
-  void Function() onArHideHelpMessage;
+  void Function()? onArHideHelpMessage;
 
-  void Function(String modelId, String componentId) onArModelAdded;
+  void Function(String modelId, String componentId)? onArModelAdded;
 
-  void Function(String modelId, String componentId) onModelDeleted;
+  void Function(String modelId, String componentId)? onModelDeleted;
 
-  void Function(String modelId, String componentId) onModelSelected;
+  void Function(String modelId, String componentId)? onModelSelected;
 
-  void Function(String componentId, int progress) onModelLoadingProgress;
+  void Function(String componentId, int progress)? onModelLoadingProgress;
 
-  void Function() onSelectionReset;
+  void Function()? onSelectionReset;
 
-  void Function(Vector3 worldPosition) onArFirstPlaneDetected;
+  void Function(Vector3? worldPosition)? onArFirstPlaneDetected;
 
   void dispose() {
-    _channel?.invokeMethod<void>('dispose');
+    _channel.invokeMethod<void>('dispose');
   }
 
-  Future<void> addModel(ComponentEntity component, {Vector3 worldPosition}) {
+  Future<void> addModel(ComponentEntity component, {required Vector3 worldPosition}) {
     final jsonWorldPosition = Vector3Converter().toJson(worldPosition);
     final Map<dynamic, dynamic> params = <String, dynamic>{
       'componentId': component.id,
@@ -122,7 +116,7 @@ class ArController {
     return _channel.invokeMethod<void>('resetSelection');
   }
 
-  Future<bool> setMeasurementShown(bool value) {
+  Future<bool?> setMeasurementShown(bool? value) {
     final Map<dynamic, dynamic> params = <String, dynamic>{
       'value': value ?? false
     };
@@ -133,10 +127,8 @@ class ArController {
     try {
       switch (call.method) {
         case 'onError':
-          if (onError != null) {
-            print("[ERROR] ${call.arguments}");
-            onError(call.arguments['isCritical'], call.arguments['message']);
-          }
+          print("[ERROR] ${call.arguments}");
+          onError?.call(call.arguments['isCritical'], call.arguments['message']);
           break;
 
         case 'onArSessionStarted':

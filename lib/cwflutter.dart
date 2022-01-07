@@ -20,13 +20,13 @@ class Cwflutter {
     return version;
   }
 
-  static Future<bool> checkConfiguration(ArConfiguration configuration) {
+  static Future<bool?> checkConfiguration(ArConfiguration configuration) {
     return _channel.invokeMethod<bool>('checkConfiguration', {
       'configuration': configuration.index,
     });
   }
 
-  static Future<bool> initialize(
+  static Future<bool?> initialize(
       String companyAuthToken,
       int dbAccessPeriod,
       int androidLowMemoryThreshold,
@@ -47,16 +47,16 @@ class Cwflutter {
 
     authState = AuthState.inProgress;
     try {
-      bool result = await _channel.invokeMethod<bool>('signIn');
+      bool result = await _channel.invokeMethod<bool>('signIn') ?? false;
       authState = result ? AuthState.authorised : AuthState.unauthorized;
       return Future.value(result);
     } on PlatformException catch (e) {
       authState = AuthState.unauthorized;
-      return Future.error(e.message);
+      return Future.error(e.message ?? "<unknown error>");
     }
   }
 
-  static Future<String> obtainFile(String fileKey) async {
+  static Future<String?> obtainFile(String fileKey) async {
     return _channel.invokeMethod<String>('obtainFile', {
       'file_key': fileKey,
     }).then((value) {
@@ -73,7 +73,7 @@ class Cwflutter {
       return [];
     }
 
-    List<ComponentEntity> entities = List<ComponentEntity>();
+    List<ComponentEntity> entities = List<ComponentEntity>.empty(growable: true);
     for (final it in invocationResult.toList()) {
       final json = Map<dynamic, dynamic>.from(it);
       entities.add(ComponentEntity.fromJson(json));
@@ -82,7 +82,7 @@ class Cwflutter {
     return entities;
   }
 
-  static Future<ComponentEntity> obtainComponentById(String id) async {
+  static Future<ComponentEntity?> obtainComponentById(String id) async {
     return _channel.invokeMethod<Map<dynamic, dynamic>>('obtainComponentById', {
       'id': id,
     }).then((value) {
@@ -104,7 +104,7 @@ class Cwflutter {
       return [];
     }
 
-    List<AppListItemEntity> entities = List<AppListItemEntity>();
+    List<AppListItemEntity> entities = List<AppListItemEntity>.empty(growable: true);
     for (final it in invocationResult.toList()) {
       final json = Map<dynamic, dynamic>.from(it);
       entities.add(AppListItemEntity.fromJson(json));
